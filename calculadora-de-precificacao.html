@@ -1,0 +1,308 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calculadora de Precificação — Doce Lucro</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;1,700&family=Lora:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --creme:#F6F1E7; --fundo:#EFE7DA; --ouro:#A67C52; --marrom:#2C1E16;
+    --texto:#5A4D45; --borda:#D8C8B8; --verde:#4a7c59; --vermelho:#b04a3a;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;padding:0;background:var(--fundo);font-family:'Lora',Georgia,serif;color:var(--texto);}
+  .wrap{max-width:520px;margin:0 auto;padding:16px 14px 40px;}
+  header{background:var(--creme);border:2px solid var(--ouro);border-radius:12px;
+         text-align:center;padding:18px 14px 14px;margin-bottom:16px;}
+  header .emoji{font-size:30px}
+  header h1{font-family:'Playfair Display',Georgia,serif;color:var(--marrom);
+            font-size:24px;margin:4px 0 0;line-height:1.15;}
+  header h2{font-family:'Playfair Display',Georgia,serif;font-style:italic;
+            color:var(--ouro);font-size:18px;margin:2px 0 8px;}
+  header p{font-size:11px;text-transform:uppercase;letter-spacing:1px;margin:0;
+           border-top:1px solid var(--borda);padding-top:8px;width:80%;margin:8px auto 0;}
+  .card{background:var(--creme);border:1px solid var(--borda);border-radius:12px;
+        padding:16px 14px;margin-bottom:14px;}
+  .card h3{font-family:'Playfair Display',Georgia,serif;color:var(--marrom);
+           font-size:16px;margin:0 0 10px;}
+  .card h3 span{color:var(--ouro)}
+  label{display:block;font-size:12px;font-weight:600;color:var(--marrom);margin:8px 0 3px;}
+  input,select{width:100%;padding:9px 10px;border:1px solid var(--borda);border-radius:8px;
+        font-family:'Lora',Georgia,serif;font-size:15px;color:var(--marrom);background:#fff;}
+  input:focus,select:focus{outline:2px solid var(--ouro);}
+  .row2{display:flex;gap:10px}
+  .row2>div{flex:1}
+  .ingrow{display:grid;grid-template-columns:1.6fr .8fr .9fr .8fr 30px;gap:6px;
+          align-items:end;margin-bottom:8px;}
+  .ingrow input{padding:7px 6px;font-size:13px;}
+  .ingrow .mini{font-size:9.5px;color:var(--texto);text-transform:uppercase;
+                letter-spacing:.5px;display:block;margin-bottom:2px;}
+  .del{background:none;border:1px solid var(--borda);border-radius:8px;height:36px;
+       color:var(--vermelho);font-size:15px;cursor:pointer;}
+  .btn{display:inline-block;background:var(--ouro);color:#fff;border:none;border-radius:8px;
+       padding:10px 16px;font-family:'Lora',Georgia,serif;font-size:14px;font-weight:600;
+       cursor:pointer;text-align:center;}
+  .btn.secundario{background:#fff;color:var(--ouro);border:1.5px solid var(--ouro);}
+  .btn.largo{width:100%;padding:12px;font-size:15px;}
+  .resultado{background:linear-gradient(180deg,#fff 0%,var(--creme) 100%);
+             border:2px solid var(--ouro);border-radius:12px;padding:16px 14px;margin:6px 0 14px;}
+  .resultado h3{font-family:'Playfair Display',Georgia,serif;color:var(--marrom);
+                text-align:center;font-size:15px;margin:0 0 10px;}
+  .linha{display:flex;justify-content:space-between;font-size:13.5px;padding:5px 0;
+         border-bottom:1px dashed var(--borda);}
+  .linha b{color:var(--marrom)}
+  .destaque{background:var(--marrom);color:#fff;border-radius:10px;padding:12px;
+            text-align:center;margin-top:10px;}
+  .destaque .rotulo{font-size:11px;text-transform:uppercase;letter-spacing:1px;opacity:.85;}
+  .destaque .valor{font-family:'Playfair Display',Georgia,serif;font-size:32px;
+                   color:#F3D9A4;margin:2px 0;}
+  .destaque .sub{font-size:12px;opacity:.9}
+  .ok{color:var(--verde)} .alerta{color:var(--vermelho);font-size:12.5px;}
+  details{background:var(--creme);border:1px solid var(--borda);border-radius:10px;
+          padding:10px 14px;margin-bottom:14px;font-size:13px;}
+  summary{cursor:pointer;font-weight:600;color:var(--marrom);}
+  details p{margin:8px 0 0;line-height:1.5;}
+  footer{text-align:center;font-size:11px;color:var(--texto);opacity:.8;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header>
+    <div class="emoji">🍰</div>
+    <h1>Calculadora de</h1>
+    <h2>Precificação</h2>
+    <p>Doce Lucro Premium</p>
+  </header>
+
+  <div class="card">
+    <h3><span>1.</span> Comece por uma receita do e-book (ou do zero)</h3>
+    <select id="preset">
+      <option value="">— Escolha uma receita do e-book —</option>
+    </select>
+    <p style="font-size:12px;margin:8px 0 0;">Escolher uma receita preenche automaticamente os ingredientes com os preços reais de Barueri e região. Você pode editar tudo.</p>
+  </div>
+
+  <div class="card">
+    <h3><span>2.</span> Ingredientes do lote</h3>
+    <div id="ingredientes"></div>
+    <button class="btn secundario" onclick="addRow()">+ Adicionar ingrediente</button>
+    <p class="mini" style="margin-top:8px;font-size:11px;">Dica: "custo do pacote" é o que você paga na embalagem inteira (ex.: pacote de farinha R$ 6,50 = 1.000 g).</p>
+  </div>
+
+  <div class="card">
+    <h3><span>3.</span> Rendimento e embalagem</h3>
+    <div class="row2">
+      <div>
+        <label for="rend">Unidades que o lote rende</label>
+        <input id="rend" type="text" inputmode="numeric" placeholder="ex.: 10" oninput="calc()">
+      </div>
+      <div>
+        <label for="emb">Embalagem por unidade (R$)</label>
+        <input id="emb" type="text" inputmode="decimal" placeholder="ex.: 1,60" oninput="calc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span>4.</span> Sua mão de obra</h3>
+    <div class="row2">
+      <div>
+        <label for="vh">Valor da sua hora (R$)</label>
+        <input id="vh" type="text" inputmode="decimal" placeholder="ex.: 15,00" oninput="calc()">
+      </div>
+      <div>
+        <label for="horas">Horas de trabalho no lote</label>
+        <input id="horas" type="text" inputmode="decimal" placeholder="ex.: 1,5" oninput="calc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <h3><span>5.</span> Custos fixos e lucro</h3>
+    <div class="row2">
+      <div>
+        <label for="fixos">Custos fixos (%) — energia, gás, água</label>
+        <input id="fixos" type="text" inputmode="decimal" value="20" oninput="calc()">
+      </div>
+      <div>
+        <label for="margem">Margem de lucro desejada (%)</label>
+        <input id="margem" type="text" inputmode="decimal" value="30" oninput="calc()">
+      </div>
+    </div>
+  </div>
+
+  <div class="resultado" id="resultado" style="display:none;">
+    <h3>Resultado da precificação</h3>
+    <div class="linha"><span>Custo de ingredientes do lote</span><b id="rIng">—</b></div>
+    <div class="linha"><span>Mão de obra do lote</span><b id="rMo">—</b></div>
+    <div class="linha"><span>Custo por unidade (com embalagem)</span><b id="rCusto">—</b></div>
+    <div class="linha"><span>Preço calculado (antes de arredondar)</span><b id="rSug">—</b></div>
+    <div class="destaque">
+      <div class="rotulo">Preço sugerido de venda</div>
+      <div class="valor" id="rFinal">—</div>
+      <div class="sub" id="rLucro">—</div>
+      <div class="sub" id="rLote">—</div>
+    </div>
+    <p id="rAviso" class="alerta" style="display:none;margin:10px 0 0;"></p>
+  </div>
+
+  <button class="btn largo" onclick="limpar()">Nova receita (limpar tudo)</button>
+
+  <details style="margin-top:14px;">
+    <summary>Como a calculadora chega no preço</summary>
+    <p><b>1.</b> Custo de cada ingrediente = custo do pacote × quantidade usada ÷ quantidade do pacote.<br>
+    <b>2.</b> Custo por unidade = (ingredientes + sua mão de obra) ÷ rendimento + embalagem.<br>
+    <b>3.</b> Preço = custo por unidade ÷ [1 − (custos fixos % + margem %) ÷ 100].<br>
+    <b>4.</b> Arredondamos para cima até o melhor preço psicológico (terminando em ,90).<br><br>
+    Custos fixos e margem seguem a lógica do e-book: vender só pelo custo do ingrediente é o caminho para o prejuízo.</p>
+  </details>
+
+  <footer>Preços de referência das receitas: Barueri e região (Atacadão, Assaí, CEAGESP e lojas de confeitaria) — pesquisa nov/2026.<br>Doce Lucro Premium © <span id="ano"></span></footer>
+</div>
+
+<script>
+const PRECO = {
+  farinha:6.50, acucar:5.20, mascavo:13.50, ovos_g:16.00, manteiga:53.00,
+  leite:5.90, creme:24.50, cond:23.00, ninho:78.00, cacau:62.00,
+  choco70:108.00, choco50:88.00, choco_branco:95.00, nutella:68.00,
+  morango:22.00, coco:32.00, doce_leite:29.00, nozes:96.00, avelas:82.00,
+  pistache:175.00, fermento:38.00, baunilha:35.00, sal:2.50, granulado:65.00,
+  glucose:14.00, corante:400.00, uva:18.00
+};
+const NOMES = {
+  farinha:"Farinha de trigo", acucar:"Açúcar refinado", mascavo:"Açúcar mascavo",
+  ovos_g:"Ovos", manteiga:"Manteiga sem sal", leite:"Leite integral",
+  creme:"Creme de leite", cond:"Leite condensado", ninho:"Leite em pó",
+  cacau:"Cacau em pó 50%", choco70:"Chocolate 70% (callets)", choco50:"Chocolate 50%",
+  choco_branco:"Chocolate branco", nutella:"Nutella", morango:"Morango",
+  coco:"Coco ralado", doce_leite:"Doce de leite pastoso", nozes:"Nozes",
+  avelas:"Avelã", pistache:"Pistache", fermento:"Fermento químico",
+  baunilha:"Essência de baunilha", sal:"Sal", granulado:"Granulado belga",
+  glucose:"Glucose de milho", corante:"Corante gel", uva:"Uva verde"
+};
+const RECEITAS = [
+  {n:"R1 · Paraíso de Morango (Bolo de Pote)", rend:10, emb:1.60,
+   ing:{farinha:300,acucar:290,manteiga:100,ovos_g:220,leite:300,fermento:12,baunilha:5,sal:2,cond:395,creme:300,ninho:150,morango:400}},
+  {n:"R2 · Chocolatudo (Bolo de Pote)", rend:10, emb:1.60,
+   ing:{farinha:280,cacau:75,acucar:260,manteiga:105,ovos_g:220,leite:200,fermento:12,cond:395,choco50:150,creme:300,granulado:50}},
+  {n:"R3 · Prestígio Premium (Bolo de Pote)", rend:10, emb:1.60,
+   ing:{farinha:280,cacau:50,acucar:260,manteiga:90,ovos_g:220,leite:200,fermento:12,cond:395,coco:210,creme:300,choco50:150}},
+  {n:"R4 · Golden Caramel (Bolo de Pote)", rend:10, emb:1.60,
+   ing:{farinha:300,acucar:320,manteiga:100,ovos_g:220,leite:300,fermento:12,baunilha:5,doce_leite:350,creme:300,nozes:90}},
+  {n:"R5 · Brownie Noir 70%", rend:16, emb:0.80,
+   ing:{choco70:200,manteiga:150,mascavo:200,ovos_g:165,farinha:120,cacau:30,sal:3,baunilha:5}},
+  {n:"R6 · Nutella Elegance (Brownie)", rend:16, emb:0.80,
+   ing:{nutella:250,choco50:100,manteiga:100,acucar:150,ovos_g:165,farinha:100,avelas:80,sal:2}},
+  {n:"R7 · Pistache Royal (Brownie)", rend:16, emb:0.80,
+   ing:{choco_branco:150,choco50:100,manteiga:175,acucar:300,ovos_g:165,farinha:110,pistache:100,creme:80,sal:5}},
+  {n:"R8 · Galeria do Chocolate (Bolo Decorado)", rend:1, emb:11.00,
+   ing:{farinha:400,cacau:110,acucar:320,manteiga:175,ovos_g:330,leite:300,fermento:16,cond:395,choco50:350,creme:100,glucose:30,granulado:80}},
+  {n:"R9 · Naked Elegance (Bolo Decorado)", rend:1, emb:11.00,
+   ing:{farinha:400,acucar:360,manteiga:160,ovos_g:330,leite:300,fermento:16,baunilha:8,doce_leite:300,creme:300,ninho:100,morango:200,uva:150}},
+  {n:"R10 · Rosé de Morango (Bolo Decorado)", rend:1, emb:11.00,
+   ing:{farinha:400,acucar:360,manteiga:160,ovos_g:330,leite:420,fermento:16,baunilha:8,cond:395,creme:500,ninho:100,morango:400,corante:2}}
+];
+
+const fmt = v => "R$ " + v.toFixed(2).replace(".", ",");
+function num(v){
+  v = String(v).trim();
+  if(!v) return 0;
+  if(v.includes(",")) v = v.replace(/\./g, "").replace(",", ".");
+  const f = parseFloat(v);
+  return isNaN(f) ? 0 : f;
+}
+function addRow(nome="", usada="", custo="", pacote=""){
+  const cont = document.getElementById("ingredientes");
+  const div = document.createElement("div");
+  div.className = "ingrow";
+  div.innerHTML =
+    '<span class="mini" style="display:none;"></span>' +
+    '<div><span class="mini">Ingrediente</span><input class="i-nome" type="text" placeholder="ex.: Farinha" value="'+nome+'"></div>' +
+    '<div><span class="mini">Usada (g/ml)</span><input class="i-usada" type="text" inputmode="decimal" placeholder="300" value="'+usada+'" oninput="calc()"></div>' +
+    '<div><span class="mini">Custo pacote R$</span><input class="i-custo" type="text" inputmode="decimal" placeholder="6,50" value="'+custo+'" oninput="calc()"></div>' +
+    '<div><span class="mini">Pacote (g/ml)</span><input class="i-pacote" type="text" inputmode="decimal" placeholder="1000" value="'+pacote+'" oninput="calc()"></div>' +
+    '<button class="del" onclick="this.parentNode.remove();calc()" title="Remover">✕</button>';
+  cont.appendChild(div);
+}
+function carregarPreset(){
+  const i = document.getElementById("preset").value;
+  if(i === "") return;
+  const r = RECEITAS[parseInt(i)];
+  document.getElementById("ingredientes").innerHTML = "";
+  for(const [k, g] of Object.entries(r.ing)){
+    addRow(NOMES[k], g, PRECO[k].toFixed(2).replace(".", ","), 1000);
+  }
+  document.getElementById("rend").value = r.rend;
+  document.getElementById("emb").value = r.emb.toFixed(2).replace(".", ",");
+  calc();
+}
+function limpar(){
+  document.getElementById("preset").value = "";
+  document.getElementById("ingredientes").innerHTML = "";
+  ["rend","emb","vh","horas"].forEach(id => document.getElementById(id).value = "");
+  document.getElementById("fixos").value = "20";
+  document.getElementById("margem").value = "30";
+  calc();
+}
+function preco90(p){
+  const n = Math.floor(p);
+  let cand = n + 0.90;
+  if(cand < p - 1e-9) cand = n + 1 + 0.90;
+  return cand;
+}
+function calc(){
+  const res = document.getElementById("resultado");
+  let ingTotal = 0, temIng = false;
+  document.querySelectorAll(".ingrow").forEach(row => {
+    const usada  = num(row.querySelector(".i-usada").value);
+    const custo  = num(row.querySelector(".i-custo").value);
+    const pacote = num(row.querySelector(".i-pacote").value);
+    if(usada > 0 && custo > 0 && pacote > 0){ ingTotal += custo * usada / pacote; temIng = true; }
+  });
+  const rend  = num(document.getElementById("rend").value);
+  const emb   = num(document.getElementById("emb").value);
+  const mo    = num(document.getElementById("vh").value) * num(document.getElementById("horas").value);
+  const fixos = num(document.getElementById("fixos").value);
+  const margem= num(document.getElementById("margem").value);
+
+  if(!temIng || rend <= 0){ res.style.display = "none"; return; }
+  res.style.display = "block";
+
+  const custoLote = ingTotal + mo;
+  const custoUni  = custoLote / rend + emb;
+  const denom = 1 - (fixos + margem) / 100;
+  const aviso = document.getElementById("rAviso");
+  if(denom <= 0){
+    aviso.style.display = "block";
+    aviso.textContent = "Custos fixos + margem somam 100% ou mais — não dá para calcular. Reduza um dos dois.";
+    ["rIng","rMo","rCusto","rSug","rFinal","rLucro","rLote"].forEach(id => document.getElementById(id).textContent = "—");
+    return;
+  }
+  aviso.style.display = "none";
+  const pSug = custoUni / denom;
+  const pFinal = preco90(pSug);
+  const lucro = pFinal - custoUni - custoUni * (fixos / 100);
+  const margemReal = (lucro / pFinal) * 100;
+
+  document.getElementById("rIng").textContent  = fmt(ingTotal);
+  document.getElementById("rMo").textContent   = fmt(mo);
+  document.getElementById("rCusto").textContent= fmt(custoUni);
+  document.getElementById("rSug").textContent  = fmt(pSug);
+  document.getElementById("rFinal").textContent= fmt(pFinal);
+  document.getElementById("rLucro").textContent= "Lucro por unidade: " + fmt(lucro) + "  ·  margem real: " + margemReal.toFixed(0) + "%";
+  document.getElementById("rLote").textContent = "Faturamento do lote (" + Math.round(rend) + " un.): " + fmt(pFinal * rend);
+}
+const sel = document.getElementById("preset");
+RECEITAS.forEach((r, i) => {
+  const o = document.createElement("option");
+  o.value = i; o.textContent = r.n;
+  sel.appendChild(o);
+});
+sel.addEventListener("change", carregarPreset);
+document.getElementById("ano").textContent = new Date().getFullYear();
+addRow(); calc();
+</script>
+</body>
+</html>
